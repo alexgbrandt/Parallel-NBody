@@ -1,0 +1,18 @@
+#version 330 core
+
+/**
+ * NBody shaders adapted from github.com/leluron/nbody
+ */
+
+in vec2 uv2;
+in vec4 color;
+
+uniform sampler2D tex;
+
+out vec4 out_color;
+
+void main()
+{
+	float alpha = texture(tex, uv2).r;
+	out_color = vec4(color.rgb*alpha, 1.0);
+}
