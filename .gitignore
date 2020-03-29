@@ -1,0 +1,14 @@
+*.aux
+*.bbl
+*.vrb
+*.snm
+*.toc
+*.out
+*.synctex.gz
+*.log
+*.nav
+*.blg
+**/Library/*
+*.o
+*.swp
+.ipynb_checkpoints
