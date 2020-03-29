@@ -9,16 +9,6 @@
 
 
 /**
- * Should the renderer be built and run with the simulation?
- */
-#define NBODY_SIM_WITH_RENDERER 1
-
-/**
- * Should the simulation be built to run in parallel?
- */
-#define NBODY_PARALLEL 1
-
-/**
  * Init the points to be two Plummer clusters.
  */
 static const int NBODY_INIT_TWO_CLUSTERS = 1;

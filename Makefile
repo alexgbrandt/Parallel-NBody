@@ -1,25 +1,60 @@
 CC = gcc
 CPPC = g++
 INCLUDES=.
-CCOMPILEARG = -Wall -g -funroll-loops -I$(INCLUDES) -std=gnu11
-CPPCOMPILEARG = -Wall -g -I$(INCLUDES) -std=c++11
-LDARGS = -lglfw -lGLEW -lGL -l GLU -lrt -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lpthread -lm
+CCOMPILEARG = -Wall -O3 -funroll-loops -I$(INCLUDES) -std=gnu11
+CPPCOMPILEARG = -Wall -O3 -I$(INCLUDES) -std=c++11
 
-SOURCES = NBodyInit.o NBodyForces.o NBodyKeys.o NBodyOctree.o NBodyParallel.o NBodySimulation.o NBodyMain.o
+OGLLIBS = -lglfw -lGLEW -lGL -lGLU -lrt -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor
+LDARGS = -lpthread -lm
+
+SOURCES = NBodyInit.o NBodyForces.o NBodyKeys.o NBodyOctree.o NBodySimulation.o NBodyMain.o
 OGL_SOURCES = ogl/shader.o ogl/NBodyRenderer.o
-PARALLEL_SOURCES = parallel/ExecutorThreadPool.o parallel/FunctionExecutorThread.o
+PARALLEL_SOURCES = NBodyParallel.o parallel/ExecutorThreadPool.o parallel/FunctionExecutorThread.o
 
-vpath %.cpp ./ 
+vpath %.cpp ./
 vpath %.cpp ogl/
 vpath %.o ogl/
 
 
-all : makepar makeogl test.bin
+all : parallel 
+
+serial-noviz : CCOMPILEARG += -DNBODY_PARALLEL=0
+serial-noviz : CPPCOMPILEARG += -DNBODY_PARALLEL=0
+serial-noviz : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=0
+serial-noviz : clean noviz-serial.bin
+
+parallel-noviz : CCOMPILEARG += -DNBODY_PARALLEL=1
+parallel-noviz : CPPCOMPILEARG += -DNBODY_PARALLEL=1
+parallel-noviz : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=0
+parallel-noviz  : clean makepar noviz-test.bin
+
+serial : CCOMPILEARG += -DNBODY_PARALLEL=0
+serial : CPPCOMPILEARG += -DNBODY_PARALLEL=0
+serial : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=1
+serial : clean makeogl serial.bin
+
+parallel : CCOMPILEARG += -DNBODY_PARALLEL=1
+parallel : CPPCOMPILEARG += -DNBODY_PARALLEL=1
+parallel : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=1
+parallel : clean makepar makeogl test.bin
 
 debug : CPPCOMPILEARG += -DDEBUG_OCTREE_OGL=1
-debug : makedebugogl test.bin
+debug : clean makedebugogl test.bin
 
-makepar : 
+
+serial.bin : $(SOURCES) 
+	$(CPPC) -o test.bin $^ $(OGL_SOURCES) $(OGLLIBS) $(LDARGS)
+
+noviz-serial.bin : $(SOURCES) 
+	$(CPPC) -o test.bin $^ $(LDARGS)
+
+noviz-test.bin: $(SOURCES)
+	$(CPPC) -o test.bin $^  $(PARALLEL_SOURCES) $(LDARGS)
+
+test.bin : $(SOURCES)
+	$(CPPC) -o $@ $^ $(OGL_SOURCES) $(PARALLEL_SOURCES) $(OGLLIBS) $(LDARGS)
+
+makepar : NBodyParallel.o 
 	(cd parallel; make;)
 
 makeogl : 
@@ -34,12 +69,9 @@ makedebugogl :
 %.o: %.c %.h NBodyConfig.h
 	$(CC) -c $(CCOMPILEARG) $<
 
-test.bin : $(SOURCES) 
-	$(CPPC) -o $@ $^ $(OGL_SOURCES) $(PARALLEL_SOURCES) $(LDARGS)
 
 clean : 
 	(cd ogl; make clean;)
 	(cd parallel; make clean;)
 	@rm -rf *.o test.bin
-
 

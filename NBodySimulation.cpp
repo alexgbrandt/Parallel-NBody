@@ -119,8 +119,8 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
 
         //second kick
         performNBodyHalfStepB(N, dt, r, v, a, m);
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
 
+        // Print checkpoints.
         // if (t >= t_out) {
         //     Ekin = computeEkin_NB(N, m, v);
         //     Epot = computeEpot_NB(N, m, r);
@@ -148,6 +148,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
     // renderer.stopRenderThread();
 #endif
 
+
 /**********************************
  * Clean up
  **********************************/
@@ -158,8 +159,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
 
 
 
-
-
+#if NBODY_PARALLEL
 void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta) {
 
 /**********************************
@@ -332,3 +332,4 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
     }
 
 }
+#endif

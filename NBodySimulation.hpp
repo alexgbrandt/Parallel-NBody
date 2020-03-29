@@ -15,6 +15,7 @@
 void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta);
 
 
+#if NBODY_PARALLEL
 /**
  * Start the gravitational N-Body simultation in parallel.
  *
@@ -25,6 +26,6 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta);
  * @param theta, a parameter for the Barnes-Hut multipole acceptance criteria.
  */
 void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta);
-
+#endif
 
 #endif
