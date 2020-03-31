@@ -35,4 +35,6 @@ int main(int argc, char** argv) {
 #else
     NBodySimSerial(N, dt, t_end, seed, theta);
 #endif
+
+    return 0;
 }

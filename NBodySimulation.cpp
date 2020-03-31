@@ -92,6 +92,8 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
     long step;
     double dt_out = 0.1;
     double t_out = dt_out;
+    unsigned long long startTimer;
+    _startTimerParallel(&startTimer);
     for (double t = 0.0; t < t_end; t += dt) {
 #if NBODY_SIM_WITH_RENDERER
         if (renderer.shouldClose()) {
@@ -134,11 +136,15 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
         // }
     }
 
+    float elapsed = 0.0;
+    _stopTimerAddElapsedParallel(&startTimer, &elapsed);
+
     Epot = computeEpot_NB(N, m, r);
     Ekin = computeEkin_NB(N, m, v);
     E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
     fprintf(stderr, "Eend: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "Elapsed Time: %.15g\n", elapsed);
 
 
 #if NBODY_SIM_WITH_RENDERER
@@ -259,6 +265,8 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
     long step;
     double dt_out = 0.1;
     double t_out = dt_out;
+    unsigned long long startTimer;
+    _startTimerParallel(&startTimer);
     for (double t = 0.0; t < t_end; t += dt) {
 #if NBODY_SIM_WITH_RENDERER
         if (renderer.shouldClose()) {
@@ -300,11 +308,14 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
         performNBodyHalfStepBParallel_NB(dt, r, v, a, m, startN, numN);
     }
 
+    float elapsed = 0.0;
+    _stopTimerAddElapsedParallel(&startTimer, &elapsed);
     Epot = computeEpot_NB(N, m, r);
     Ekin = computeEkin_NB(N, m, v);
     E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
     fprintf(stderr, "Eend: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "Elapsed Time: %.15g\n", elapsed);
 
 
 #if NBODY_SIM_WITH_RENDERER
