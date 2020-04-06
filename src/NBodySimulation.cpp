@@ -52,7 +52,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
     double Ekin = computeEkin_NB(N, m, v);
     double E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
-    fprintf(stderr, "E0: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "E0: %.15g\n", E0);
 
 
 /**********************************
@@ -88,8 +88,6 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
 /**********************************
  * Start sim
  **********************************/
-    double E1;
-    long step;
     double dt_out = 0.1;
     double t_out = dt_out;
     unsigned long long startTimer;
@@ -126,7 +124,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
         // if (t >= t_out) {
         //     Ekin = computeEkin_NB(N, m, v);
         //     Epot = computeEpot_NB(N, m, r);
-        //     E1 = Ekin + Epot;
+        //     double E1 = Ekin + Epot;
         //     for (long k = 0; k < N; ++k) {
         //         printf("%.15g %.15g %.15g ", r[3*k], r[3*k+1], r[3*k+2]);
         //     }
@@ -143,7 +141,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
     Ekin = computeEkin_NB(N, m, v);
     E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
-    fprintf(stderr, "Eend: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "Eend: %.15g\n", E0);
     fprintf(stderr, "Elapsed Time: %.15g\n", elapsed);
 
 
@@ -194,7 +192,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
     double Ekin = computeEkin_NB(N, m, v);
     double E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
-    fprintf(stderr, "E0: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "E0: %.15g\n", E0);
 
 
 /**********************************
@@ -261,8 +259,6 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
 /**********************************
  * Start sim
  **********************************/
-    double E1;
-    long step;
     double dt_out = 0.1;
     double t_out = dt_out;
     unsigned long long startTimer;
@@ -314,7 +310,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
     Ekin = computeEkin_NB(N, m, v);
     E0 = Epot + Ekin;
     fprintf(stderr, "Ekin: %.15g\nEpot: %.15g\n", Ekin, Epot);
-    fprintf(stderr, "Eend: %.15g\n", Ekin + Epot);
+    fprintf(stderr, "Eend: %.15g\n", E0);
     fprintf(stderr, "Elapsed Time: %.15g\n", elapsed);
 
 

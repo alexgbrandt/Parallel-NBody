@@ -1,8 +1,8 @@
 CC = gcc
 CPPC = g++
-INCLUDES=.
-CCOMPILEARG = -Wall -g -I$(INCLUDES) -std=gnu11
-CPPCOMPILEARG = -Wall -g -I$(INCLUDES) -std=c++11
+INCLUDES=-I./ -I../ -I../include
+CCOMPILEARG = -Wall -g $(INCLUDES) -std=gnu11
+CPPCOMPILEARG = -Wall -g $(INCLUDES) -std=c++11
 LDARGS = -lglfw -lGLEW -lGL -l GLU -lrt -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lm
 
 SOURCES = shader.o NBodyRenderer.o

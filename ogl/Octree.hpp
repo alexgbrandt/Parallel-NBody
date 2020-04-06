@@ -3,8 +3,8 @@
 #define _OGL_OCTREE_
 
 #include <mutex>
-#include "../parallel/include/Synchronized.hpp"
-#include "../NBodyOctree.h"
+#include "parallel/include/Synchronized.hpp"
+#include "NBodyOctree.h"
 
 
 /**
