@@ -156,9 +156,9 @@ void computeForceInteractList_NB(
 			//just did monopole so now quadrupole approximate
 
 			//Q.r / |r|^5; recall quadMom is only the upper triangle of symmetric tensor
-			qx = node->quadMom[0]*dx + node->quadMom[1]*dx + node->quadMom[2]*dx;
-			qy = node->quadMom[1]*dy + node->quadMom[3]*dy + node->quadMom[4]*dy;
-			qz = node->quadMom[2]*dz + node->quadMom[4]*dz + node->quadMom[5]*dz;
+			qx = node->quadMom[0]*dx + node->quadMom[1]*dy + node->quadMom[2]*dz;
+			qy = node->quadMom[1]*dx + node->quadMom[3]*dy + node->quadMom[4]*dz;
+			qz = node->quadMom[2]*dx + node->quadMom[4]*dy + node->quadMom[5]*dz;
 
 
 			D *= D2; // 1/D5 now
@@ -166,7 +166,7 @@ void computeForceInteractList_NB(
 			a[1] -= qy*D;
 			a[2] -= qz*D;
 
-			//qx = 5*r.Q.r*r / 2*|r|^7
+			//5*r.Q.r*r / 2*|r|^7
 			qx = dx*qx + dy*qy + dz*qz;
 			qx *= 2.5;
 			D *= D2; // 1/D7 now

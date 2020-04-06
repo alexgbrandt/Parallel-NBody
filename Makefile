@@ -39,7 +39,10 @@ parallel : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=1
 parallel : clean makepar makeogl test.bin
 
 debug : CPPCOMPILEARG += -DDEBUG_OCTREE_OGL=1
-debug : clean makedebugogl test.bin
+debug : CCOMPILEARG += -DNBODY_PARALLEL=1
+debug : CPPCOMPILEARG += -DNBODY_PARALLEL=1
+debug : CPPCOMPILEARG += -DNBODY_SIM_WITH_RENDERER=1
+debug : clean makepar makedebugogl test.bin
 
 
 serial.bin : $(SOURCES) 
