@@ -7,7 +7,10 @@ proc runSim {testbin Nlist dt tEnd theta} {
 	set Endlist [];
 	foreach N $Nlist {
 
-		set data [exec $testbin $N $dt $tEnd $theta 2>@1];
+		set res [catch {exec $testbin $N $dt $tEnd $theta 2>@1} data];
+		if {$res} {
+			continue;
+		}
 
 		set lines [split $data "\n"];
 		foreach line $lines {
@@ -46,3 +49,4 @@ if {$::argc > 4} {
 } else {
 	puts "USAGE: tclsh ParseSim.tcl <NBody-Bin> <N-Bodies> <delta-T> <end-T> <theat-MAC>"
 }
+
