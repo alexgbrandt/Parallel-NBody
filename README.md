@@ -2,7 +2,7 @@
 Parallel Barnes-Hut N-Body Simulation
 =====================================
 
-![The simulated collision of two globular clusters."](./OGL-TwoClusters.png)
+!["The simulated collision of two globular clusters."](./doc/OGL-TwoClusters.png)
 
 This collection of code follows the ideas of many people
 (Warren, Salmon, Singh, Holt, Barnes, Hut, Aarseth) to implement
