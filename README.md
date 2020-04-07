@@ -61,4 +61,4 @@ not much else. Two classes are of general interest:
 
 ## An Explanation
 
-A technical report describing the problem, the background, the math, and some implementation details are given in doc/. 
+A technical report describing the problem, the background, the math, and some implementation details is given in doc/. 
