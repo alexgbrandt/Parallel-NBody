@@ -1,5 +1,8 @@
 
-# Parallel Barnes-Hut N-Body Simulation
+Parallel Barnes-Hut N-Body Simulation
+=====================================
+
+![The simulated collision of two globular clusters."](./OGL-TwoClusters.png)
 
 This collection of code follows the ideas of many people
 (Warren, Salmon, Singh, Holt, Barnes, Hut, Aarseth) to implement
@@ -55,3 +58,7 @@ not much else. Two classes are of general interest:
 
 * AsyncObjectStream: Implements effective producer-consumer communication using condition variables.
 * ExecutorThreadPool: Implements long-running functor executing threads in a pool.
+
+## An Explanation
+
+A technical report describing the problem, the background, the math, and some implementation details are given in doc/. 
