@@ -14,12 +14,12 @@ extern "C" {
  * "kick, drift". Updating velocities to the half step
  * and positions to the full step.
  *
- * @param n, the number of bodies.
- * @param dt, the time step for integration.
- * @param r, an array of 3*n doubles holding the positions of the bodies.
- * @param v, an array of 3*n doubles holding the velocitites of the bodies.
- * @param a, an array of 3*n doubles holding the acceleration of the bodies.
- * @param m, an array of n doubles holding the masses of the bodies.
+ * @param n: the number of bodies.
+ * @param dt: the time step for integration.
+ * @param r: an array of 3*n doubles holding the positions of the bodies.
+ * @param v: an array of 3*n doubles holding the velocitites of the bodies.
+ * @param a: an array of 3*n doubles holding the acceleration of the bodies.
+ * @param m: an array of n doubles holding the masses of the bodies.
  */
 static inline void performNBodyHalfStepA(long n, double dt,
     double* __restrict__ r,
@@ -46,12 +46,12 @@ static inline void performNBodyHalfStepA(long n, double dt,
  * Positions are not actually updated here but included
  * for symmetry.
  *
- * @param n, the number of bodies.
- * @param dt, the time step for integration.
- * @param r, an array of 3*n doubles holding the positions of the bodies.
- * @param v, an array of 3*n doubles holding the velocitites of the bodies.
- * @param a, an array of 3*n doubles holding the acceleration of the bodies.
- * @param m, an array of n doubles holding the masses of the bodies.
+ * @param n: the number of bodies.
+ * @param dt: the time step for integration.
+ * @param r: an array of 3*n doubles holding the positions of the bodies.
+ * @param v: an array of 3*n doubles holding the velocitites of the bodies.
+ * @param a: an array of 3*n doubles holding the acceleration of the bodies.
+ * @param m: an array of n doubles holding the masses of the bodies.
  */
 static inline void performNBodyHalfStepB(long n, double dt,
     const double* __restrict__ r,

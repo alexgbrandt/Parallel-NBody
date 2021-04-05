@@ -5,49 +5,71 @@
 
 #include "NBodyConfig.h"
 
+/**
+ * Allocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[out] d_p: a pointer pointing to the array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int allocData3N_NB(long n, double** d_p) {
+    if (d_p != NULL) {
+        *d_p = (double*) malloc(sizeof(double)*3*n);
+        if (*d_p == NULL) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 /**
- * Allocate the necessary arrays describing the n bodies.
- * All arrays returned are 3*i in size, except mass which is n.
+ * Allocate an array of doubles of size n.
  *
- * @param n, the number of bodies to allocate space for.
- * @param[out] r_p, return pointer for the position array.
- * @param[out] v_p, return pointer for the velocity array.
- * @param[out] a_p, return pointer for the acceleration array.
- * @param[out] m_p, return pointer for the mass array.
- * @param[out] work_p, return pointer for the work estiamtes array.
- * @return 0 iff the allocations was successful.
+ * @param n: the array length.
+ * @param[out] d_p: a pointer pointing to the array of size n.
+ * @return 0 iff the allocation was successful.
  */
-int allocData(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p) {
-    //TODO consider using an alternating array here which
-    //stores them all interleaved.
-    if (r_p != NULL) {
-        *r_p = (double*) malloc(sizeof(double)*n*3);
-        if (*r_p == NULL) {
+int allocDataN_NB(long n, double** d_p) {
+    if (d_p != NULL) {
+        *d_p = (double*) malloc(sizeof(double)*n);
+        if (*d_p == NULL) {
             return 1;
         }
     }
-    if (v_p != NULL) {
-        *v_p = (double*) malloc(sizeof(double)*n*3);
-        if (*v_p == NULL) {
+
+    return 0;
+}
+
+/**
+ * Reallocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[in,out] d_p: pointer to input array, returns pointing to new array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int reallocData3N_NB(long n, double** d_p) {
+    if (d_p != NULL) {
+        *d_p = (double*) realloc(*d_p, sizeof(double)*3*n);
+        if (*d_p == NULL) {
             return 1;
         }
     }
-    if (a_p != NULL) {
-        *a_p = (double*) malloc(sizeof(double)*n*3);
-        if (*a_p == NULL) {
-            return 1;
-        }
-    }
-    if (m_p != NULL) {
-        *m_p = (double*) malloc(sizeof(double)*n);
-        if (*m_p == NULL) {
-            return 1;
-        }
-    }
-    if (work_p != NULL) {
-        *work_p = (double*) malloc(sizeof(double)*n);
-        if (*work_p == NULL) {
+
+    return 0;
+}
+
+/**
+ * Reallocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[in,out] d_p: pointer to input array, returns pointing to new array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int reallocDataN_NB(long n, double** d_p) {
+    if (d_p != NULL) {
+        *d_p = (double*) realloc(*d_p, sizeof(double)*n);
+        if (*d_p == NULL) {
             return 1;
         }
     }
@@ -57,11 +79,63 @@ int allocData(long n, double** r_p, double** v_p, double** a_p, double** m_p, do
 
 
 /**
+ * Allocate the necessary arrays describing the n bodies.
+ * All arrays returned are 3*n in size, except mass which is n.
+ *
+ * @param n, the number of bodies to allocate space for.
+ * @param[out] r_p: return pointer for the position array.
+ * @param[out] v_p: return pointer for the velocity array.
+ * @param[out] a_p: return pointer for the acceleration array.
+ * @param[out] m_p: return pointer for the mass array.
+ * @param[out] work_p: return pointer for the work estiamtes array.
+ * @return 0 iff the allocations was successful.
+ */
+int allocData_NB(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p) {
+    //TODO consider using an alternating array here which
+    //stores them all interleaved.
+
+    int err = 0;
+    err |= allocData3N_NB(n, r_p);
+    err |= allocData3N_NB(n, v_p);
+    err |= allocData3N_NB(n, a_p);
+    err |= allocDataN_NB(n, m_p);
+    err |= allocDataN_NB(n, work_p);
+
+    return err;
+}
+
+
+/**
+ * Reallocate the necessary arrays describing the n bodies.
+ * All arrays returned are 3*n in size, except mass which is n.
+ *
+ * @param n, the number of bodies to allocate space for.
+ * @param[in,out] r_p: pointer to input array, returns pointing to new position array of size 3*n.
+ * @param[in,out] v_p: pointer to input array, returns pointing to new velocity array of size 3*n.
+ * @param[in,out] a_p: pointer to input array, returns pointing to new acceleration array of size 3*n.
+ * @param[in,out] m_p: pointer to input array, returns pointing to new mass array of size n.
+ * @param[in,out] work_p: pointer to input array, returns pointing to new work array of size n.
+ * @return 0 iff the allocations were successful.
+ */
+int reallocData_NB(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p) {
+
+    int err = 0;
+    err |= reallocData3N_NB(n, r_p);
+    err |= reallocData3N_NB(n, v_p);
+    err |= reallocData3N_NB(n, a_p);
+    err |= reallocDataN_NB(n, m_p);
+    err |= reallocDataN_NB(n, work_p);
+
+    return err;
+}
+
+
+/**
  * Allocate an array to hold the work estimates for each particle.
  * These values are used for dynamic load balancing.
  *
- * @param n, the double of bodies to allocate for
- * @param[out] work_p, a pointer in which to store the allocated array.
+ * @param n: the double of bodies to allocate for
+ * @param[out] work_p: a pointer in which to store the allocated array.
  * @return 0 iff the allocations was successful.
  */
 int allocWorkEstimates(long n, long** work_p) {
@@ -83,8 +157,8 @@ int allocWorkEstimates(long n, long** work_p) {
  * g1 = 0.19, g2 = 1.55, g3 = 0.05, g4=0.6.
  * Masses are scaled so that their sum is 1.0.
  *
- * @param n, the number of bodies.
- * @param m, an array of size n to store the masses.
+ * @param n: the number of bodies.
+ * @param m: an array of size n to store the masses.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -118,9 +192,9 @@ int _initMass(long n, double* m) {
 /**
  * Initialize n masses so their masses are equal and sum is 1.0.
  *
- * @param n, the number of bodies.
- * @param m, an array of size n to store the masses.
- * @param M, the total mass of all bodies.
+ * @param n: the number of bodies.
+ * @param m: an array of size n to store the masses.
+ * @param M: the total mass of all bodies.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -140,9 +214,9 @@ int _initMassEqual(long n, double* m, double M) {
  * Initialize n positions based on the Plummer model.
  * This method is based on Vol. 9 of Hut and Makino, 2005.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*i to store the positions.
- * @param Pr, Plummer radius
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*i to store the positions.
+ * @param Pr: Plummer radius
  *
  * @return 0 iff the initialization was successful.
  */
@@ -172,8 +246,8 @@ int _initPositionsPlummer(long n, double* r, double Pr) {
 /**
  * Initialize n positions uniformly throughout the unit sphere.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*n to store the positions.
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*n to store the positions.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -197,9 +271,9 @@ int _initPositionsUniform(long n, double* r) {
  * Initialize n positions as two clusters separated by separation
  * in each dimension.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*n to store the positions.
- * @param separation, the distance separating the two clusters in each dimension.
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*n to store the positions.
+ * @param separation: the distance separating the two clusters in each dimension.
  *
  * @return 0 iff the initialization was successful
  */
@@ -212,6 +286,8 @@ int _initTwoClusters(long n, double* r, double Pr, double* v, double separation)
 
     _initPositionsPlummer((n-n1), r + 3*n1, Pr);
     _initVelocitiesPlummer((n-n1), r+3*n1, v+3*n1);
+
+    separation *= 0.5;
 
     double dx = -separation, dy = -separation, dz = separation;
     for (i = 0; i < n1; ++i) {
@@ -236,9 +312,9 @@ int _initTwoClusters(long n, double* r, double Pr, double* v, double separation)
  * and Aaresh's escape velocity criteria.
  * This method is based on Vol. 9 of Hut and Makino, 2005.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*i which already stores the positions.
- * @param v, an array of size 3*i to store the velocities.
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*i which already stores the positions.
+ * @param v: an array of size 3*i to store the velocities.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -271,8 +347,8 @@ int _initVelocitiesPlummer(long n, const double* r, double* v) {
 /**
  * Initialize the n velocities randomly and uniformly in [-1,1] for each dimension.
  *
- * @param n, the number of velocities.
- * @param v, an array of 3*n doubles for n velocities.
+ * @param n: the number of velocities.
+ * @param v: an array of 3*n doubles for n velocities.
  * @return 0 iff the initialization was successful.
  */
 int _initVelocitiesUniform(long n, double* v) {
@@ -291,11 +367,11 @@ int _initVelocitiesUniform(long n, double* v) {
  * Normalizes bodies into a reference frame where the center of mass
  * is at the origin with 0 velocity.
  *
- * @param n, the number of bodies
- * @param r, an array of 3*n doubles of positions.
- * @param v, an array of 3*n doubles of velocities.
- * @param m, an array of n doubles of masses.
- * @param M, the sum of masses.
+ * @param n: the number of bodies
+ * @param r: an array of 3*n doubles of positions.
+ * @param v: an array of 3*n doubles of velocities.
+ * @param m: an array of n doubles of masses.
+ * @param M: the sum of masses.
  * @return 0 iff the adjustment was successful.
  */
 int _centerOfMassAdjustment(long n, double* r, double* v, double* m, double M) {
@@ -342,16 +418,16 @@ int _centerOfMassAdjustment(long n, double* r, double* v, double* m, double M) {
  * position, velocity, acceleration, and mass
  * for n bodies.
  *
- * @param n, the number of bodies
- * @param seed, the random seed. If <= 0, use current time.
- * @param r, an array of 3*i doubles to store the positions.
- * @param v, an array of 3*i doubles to store the velocities.
- * @param a, an array of 3*i doubles to store the accelerations.
- * @param m, an array of n doubles to store the masses.
+ * @param n: the number of bodies
+ * @param seed: the random seed. If <= 0, use current time.
+ * @param r: an array of 3*i doubles to store the positions.
+ * @param v: an array of 3*i doubles to store the velocities.
+ * @param a: an array of 3*i doubles to store the accelerations.
+ * @param m: an array of n doubles to store the masses.
  *
  * @return 0 iff the initialization was successful.
  */
-int initData(long n, time_t seed, double* r, double* v, double* a, double* m) {
+int initData_NB(long n, time_t seed, double* r, double* v, double* a, double* m) {
     if (seed <= 0) {
         seed = time(NULL);
     }
@@ -371,7 +447,7 @@ int initData(long n, time_t seed, double* r, double* v, double* a, double* m) {
     }
 
     if (NBODY_INIT_TWO_CLUSTERS) {
-        error = _initTwoClusters(n, r, Pr, v, 5.0);
+        error = _initTwoClusters(n, r, Pr, v, NBODY_TWO_CLUSTER_SEP);
     } else if (NBODY_INIT_PLUMMER) {
         // virialScale = 16.0 / (3.0 * _PI);
         error = _initPositionsPlummer(n, r, Pr);
@@ -398,7 +474,7 @@ int initData(long n, time_t seed, double* r, double* v, double* a, double* m) {
         double virialRatio = 0.5;
         double Qv = sqrt(virialRatio*fabs(Epot)/Ekin);
         scale3NArray_NB(n, v, Qv);
-        double beta = (1 - virialRatio)*Epot/(Epot+Ekin);
+        double beta = fabs((1 - virialRatio)*Epot/(Epot+Ekin));
 
         scale3NArray_NB(n, r, beta);
         scale3NArray_NB(n, v, 1.0/(sqrt(beta)));

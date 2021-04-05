@@ -13,29 +13,84 @@ extern "C" {
 
 
 /**
+ * Allocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[out] d_p: a pointer pointing to the array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int allocData3N_NB(long n, double** d_p);
+
+
+/**
+ * Allocate an array of doubles of size n.
+ *
+ * @param n: the array length.
+ * @param[out] d_p: a pointer pointing to the array of size n.
+ * @return 0 iff the allocation was successful.
+ */
+int allocDataN_NB(long n, double** d_p);
+
+
+/**
+ * Reallocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[in,out] d_p: pointer to input array, returns pointing to new array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int reallocData3N_NB(long n, double** d_p);
+
+
+/**
+ * Reallocate an array of doubles of size n*3.
+ *
+ * @param n: the array length multiplier.
+ * @param[in,out] d_p: pointer to input array, returns pointing to new array of size 3*n.
+ * @return 0 iff the allocation was successful.
+ */
+int reallocDataN_NB(long n, double** d_p);
+
+
+/**
  * Allocate the necessary arrays describing the n bodies.
  * All arrays returned are 3*n in size, except mass which is n.
  *
- * @param n, the number of bodies to allocate space for.
- * @param[out] r_p, return pointer for the position array.
- * @param[out] v_p, return pointer for the velocity array.
- * @param[out] a_p, return pointer for the acceleration array.
- * @param[out] m_p, return pointer for the mass array.
- * @param[out] work_p, return pointer for the work estiamtes array.
+ * @param n: the number of bodies to allocate space for.
+ * @param[out] r_p: return pointer for the position array.
+ * @param[out] v_p: return pointer for the velocity array.
+ * @param[out] a_p: return pointer for the acceleration array.
+ * @param[out] m_p: return pointer for the mass array.
+ * @param[out] work_p: return pointer for the work estiamtes array.
  * @return 0 iff the allocations was successful.
  */
-int allocData(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p);
+int allocData_NB(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p);
+
+
+/**
+ * Reallocate the necessary arrays describing the n bodies.
+ * All arrays returned are 3*n in size, except mass which is n.
+ *
+ * @param n, the number of bodies to allocate space for.
+ * @param[in,out] r_p: pointer to input array, returns pointing to new position array of size 3*n.
+ * @param[in,out] v_p: pointer to input array, returns pointing to new velocity array of size 3*n.
+ * @param[in,out] a_p: pointer to input array, returns pointing to new acceleration array of size 3*n.
+ * @param[in,out] m_p: pointer to input array, returns pointing to new mass array of size n.
+ * @param[in,out] work_p: pointer to input array, returns pointing to new work array of size n.
+ * @return 0 iff the allocations were successful.
+ */
+int reallocData_NB(long n, double** r_p, double** v_p, double** a_p, double** m_p, double** work_p);
 
 
 /**
  * Free the data created by allocData.
  *
- * @param r, the array of positions.
- * @param v, the array of velocities.
- * @param a, the array of acceleration.
- * @param m, the array of masses.
+ * @param r: the array of positions.
+ * @param v: the array of velocities.
+ * @param a: the array of acceleration.
+ * @param m: the array of masses.
  */
-static inline void freeData(double* r, double* v, double* a, double* m, double* work) {
+static inline void freeData_NB(double* r, double* v, double* a, double* m, double* work) {
     free(r);
     free(v);
     free(a);
@@ -47,9 +102,9 @@ static inline void freeData(double* r, double* v, double* a, double* m, double* 
 /**
  * Initialize n masses so their masses are equal and sum is 1.0.
  *
- * @param n, the number of bodies.
- * @param m, an array of size n to store the masses.
- * @param M, the total mass of all bodies.
+ * @param n: the number of bodies.
+ * @param m: an array of size n to store the masses.
+ * @param M: the total mass of all bodies.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -62,8 +117,8 @@ int _initMassEqual(long n, double* m, double M);
  * m(X) = 0.08 + g1*X^g2 + g3*X^g4 / (1-X)^0.58.
  * g1 = 0.19, g2 = 1.55, g3 = 0.05, g4=0.6.
  *
- * @param n, the number of bodies.
- * @param m, an array of size n to store the masses.
+ * @param n: the number of bodies.
+ * @param m: an array of size n to store the masses.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -74,9 +129,9 @@ int _initMass(long n, double* m);
  * Initialize n positions based on the Plummer model.
  * This method is based on Vol. 9 of Hut and Makino, 2005.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*n to store the positions.
- * @param Pr, Plummer radius
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*n to store the positions.
+ * @param Pr: Plummer radius
  *
  * @return 0 iff the initialization was successful.
  */
@@ -86,8 +141,8 @@ int _initPositionsPlummer(long n, double* r, double Pr);
 /**
  * Initialize n positions uniformly throughout the unit sphere.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*n to store the positions.
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*n to store the positions.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -99,9 +154,9 @@ int _initPositionsUniform(long n, double* r);
  * and Aaresh's escape velocity criteria.
  * This method is based on Vol. 9 of Hut and Makino, 2005.
  *
- * @param n, the number of bodies.
- * @param r, an array of size 3*n which already stores the positions.
- * @param v, an array of size 3*n to store the velocities.
+ * @param n: the number of bodies.
+ * @param r: an array of size 3*n which already stores the positions.
+ * @param v: an array of size 3*n to store the velocities.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -111,8 +166,8 @@ int _initVelocitiesPlummer(long n, const double* r, double* v);
 /**
  * Initialize n velocities to zero.
  *
- * @param n, the number of bodies.
- * @param v, an array of size 3*n to store the velocities.
+ * @param n: the number of bodies.
+ * @param v: an array of size 3*n to store the velocities.
  *
  * @return 0 iff the initialization was successful.
  */
@@ -123,11 +178,11 @@ int _initVelocitiesZero(long n, double* v);
  * Normalizes bodies into a reference frame where the center of mass
  * is at the origin with 0 velocity.
  *
- * @param n, the number of bodies
- * @param r, an array of 3*n doubles of positions.
- * @param v, an array of 3*n doubles of velocities.
- * @param m, an array of n doubles of masses.
- * @param M, the sum of masses.
+ * @param n: the number of bodies
+ * @param r: an array of 3*n doubles of positions.
+ * @param v: an array of 3*n doubles of velocities.
+ * @param m: an array of n doubles of masses.
+ * @param M: the sum of masses.
  * @return 0 iff the adjustment was successful.
  */
 int _centerOfMassAdjustment(long n, double* r, double* v, double* m, double M);
@@ -141,16 +196,16 @@ int _centerOfMassAdjustment(long n, double* r, double* v, double* m, double M);
  * Normalizes bodies into a reference frame where the center of mass
  * is at the origin with 0 velocity.
  *
- * @param n, the number of bodies
- * @param seed, the random seed. If <= 0, use current time.
- * @param r, an array of 3*n doubles to store the positions.
- * @param v, an array of 3*n doubles to store the velocities.
- * @param a, an array of 3*n doubles to store the accelerations.
- * @param m, an array of n doubles to store the masses.
+ * @param n: the number of bodies
+ * @param seed: the random seed. If <= 0: use current time.
+ * @param r: an array of 3*n doubles to store the positions.
+ * @param v: an array of 3*n doubles to store the velocities.
+ * @param a: an array of 3*n doubles to store the accelerations.
+ * @param m: an array of n doubles to store the masses.
  *
  * @return 0 iff the initialization was successful.
  */
-int initData(long n, time_t seed, double* r, double* v, double* a, double* m);
+int initData_NB(long n, time_t seed, double* r, double* v, double* a, double* m);
 
 
 /**
@@ -158,7 +213,7 @@ int initData(long n, time_t seed, double* r, double* v, double* a, double* m);
  * These colors are based an interpolation of the apparent color
  * of main sequence stars of stellar type O through M.
  *
- * @param n, the number of colors to create.
+ * @param n: the number of colors to create.
  * @return an array of n RGBA colors as 4n floats.
  */
 static inline float* createColors(long n) {

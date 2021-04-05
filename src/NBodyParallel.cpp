@@ -164,6 +164,16 @@ int mapReduceBuildOctreesInPlace_NB(
 
 	threadPool.waitForAllThreads(); //sync
 
+
+	fprintf(stderr, "OCTREES\n\n");
+	fprintf(stderr, "Octree[0]\n");
+	printOctree_NB(trees[0]);
+	fprintf(stderr, "---------------\n" );
+	fprintf(stderr, "Octree[1]\n");
+	printOctree_NB(trees[1]);
+	fprintf(stderr, "---------------\n" );
+	fprintf(stderr, "---------------\n" );
+
 	//reduce
 	_reduceOctrees_NB(threadPool, trees, NBODY_NPROCS);
 	computeMassVals_NB(trees[0]->root);

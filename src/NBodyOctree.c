@@ -1,6 +1,10 @@
 
 #include "NBodyOctree.h"
 
+#if NBODY_MPI
+#include <mpi.h>
+#include "NBodySerialize.h"
+#endif
 
 /**
  * Create an empty octree node with default values.
@@ -25,6 +29,8 @@ NBOctreeNode_t* createNBodyNode() {
 	node->quadMom[3] = 0.0;
 	node->quadMom[4] = 0.0;
 	node->quadMom[5] = 0.0;
+
+	node->childByte = 0;
 
 	node->children = NULL;
 	return node;
@@ -57,6 +63,8 @@ NBOctreeNode_t* createNBodyRootNode(double size) {
 	node->quadMom[4] = 0.0;
 	node->quadMom[5] = 0.0;
 
+	node->childByte = 0;
+
 	node->children = NULL;
 	return node;
 }
@@ -87,6 +95,8 @@ NBOctreeNode_t* createNBodyEmptyNode(const double* center, double size) {
 	node->quadMom[3] = 0.0;
 	node->quadMom[4] = 0.0;
 	node->quadMom[5] = 0.0;
+
+	node->childByte = 0;
 
 	node->children = NULL;
 	return node;
@@ -124,9 +134,9 @@ NBOctreeNode_t* createNBodyChildNode(
 	parent->children[oct]->com[2] = r[2];
 	parent->children[oct]->mass = m;
 	parent->children[oct]->N = 1;
+	setOctChild_NB(parent->childByte, oct);
 	return parent->children[oct];
 }
-
 
 /**
  * Given a filled in octree whose root is not, recursively
@@ -261,6 +271,44 @@ void insertBodyOctree_NB(NBOctreeNode_t* node, const double* r, double m) {
 	++(node->N);
 }
 
+// void insertNeighbourBody_NB(NBOctreeNode_t* node, const double* r, double m) {
+// 	if (node == NULL) {
+// 		return;
+// 	}
+
+// 	if (node->N == 0) {
+// 		node->mass = m;
+// 		node->com[0] = r[0];
+// 		node->com[1] = r[1];
+// 		node->com[2] = r[2];
+// 	} else if (node->N > 1) {
+// 		NBOctant_t oct = determineOctant_NB(node->center, r);
+// 		if (node->children[oct]) {
+// 			//recurse
+// 			insertNeighbourBody_NB(node->children[oct], r, m);
+// 		} else {
+// 			NBOctreeNode_t* newChild = createNBodyChildNode(node, oct, r, m);
+// 			newChild->isNeighbourNode = 1;
+// 		}
+// 	} else { /* N == 1 */
+// 		pushNodePointToChild_NB(node);
+
+// 		NBOctant_t oct = determineOctant_NB(node->center, r);
+// 		if (node->children[oct]) {
+// 			//if both node's point and the new point fall into same octant, recurse
+// 			insertNeighbourBody_NB(node->children[oct], r, m);
+// 		} else {
+// 			NBOctreeNode_t* newChild = createNBodyChildNode(node, oct, r, m);
+// 			newChild->isNeighbourNode = 1;
+// 		}
+// 	}
+
+// 	//finally, increment before returning.
+// 	++(node->N);
+// 	node->isNeighbourNode = 1;
+// }
+
+
 
 /**
  * Given a (sub-)Octree, free all nodes which are empty.
@@ -349,23 +397,23 @@ int buildOctreeInPlace_NB(long N, const double* r, const double* m, double domai
 
 	//TOOD fix below and actually do it in place.
 
-	// NBOctreeNode_t* root = (*tree_ptr)->root;
-	// if (fabs(domainSize - root->size) < _EPS) {
-	// 	//domainSize and octree size are equal
-	// 	emptyOctree_NB(root);
-	// 	long i;
-	// 	for (i = 0; i < N; ++i) {
-	// 		insertBodyOctree_NB(root, r+(3*i), m[i]);
-	// 	}
-	// 	pruneEmptyChildren_NB(root);
-
-	// 	computeMassVals_NB(root);
-	// 	return 1;
-	// } else {
+//	NBOctreeNode_t* root = (*tree_ptr)->root;
+//	if (fabs(domainSize - root->size) < _EPS) {
+//		//domainSize and octree size are equal
+//		emptyOctree_NB(root);
+//	 	long i;
+//	 	for (i = 0; i < N; ++i) {
+//	 		insertBodyOctree_NB(root, r+(3*i), m[i]);
+//	 	}
+//	 	pruneEmptyChildren_NB(root);
+//
+//	 	computeMassVals_NB(root);
+//	 	return 1;
+//	} else {
 		freeOctree_NB(*tree_ptr);
 		*tree_ptr = buildOctree_NB(N, r, m, domainSize);
 		return 0;
-	// }
+//	}
 }
 
 
@@ -388,13 +436,6 @@ void mergeOctreeNodes_NB(NBOctreeNode_t* dst, NBOctreeNode_t* src) {
 	// 2/ dst child is leaf, src child is non-empty: insert dst leaf to src subtree and swap
 	// 3/ dst child is internal; src child is internal: recurse the merge
 	// 4/ dst child is internal; src child is leaf:
-
-	//case 4 right away
-	if (src->children == NULL) {
-		insertBodyOctree_NB(dst, (src->com), src->mass);
-		++(dst->N);
-		return;
-	}
 
 	dst->N = 0;
 	for (int i = 0; i < 8; ++i) {
@@ -427,6 +468,7 @@ void mergeOctreeNodes_NB(NBOctreeNode_t* dst, NBOctreeNode_t* src) {
 			dst->children[i] = src->children[i];
 			src->children[i] = NULL;
 			dst->N += dst->children[i]->N;
+			setOctChild_NB(dst->childByte, i);
 		} else if (dst->children[i] != NULL) {
 			dst->N += dst->children[i]->N;
 		}
@@ -577,3 +619,90 @@ long traverseTreeInteractionListRec_NB(const NBOctree_t* tree,
 	traverseNode(tree->root, r, mac, theta, interactList, &intIdx);
 	return intIdx;
 }
+
+
+
+
+
+#if NBODY_MPI
+/**
+ * Using the map-reduce pattern, build an octree in parallel.
+ * Rank 0 is the destination of the reduction and contains the entire tree.
+ *
+ * @param r: an array of 3*localN values for position.
+ * @param m: an array of localN values for mass.
+ * @param localN: the number of bodies to insert into the octree.
+ * @param domainSize: the spatial size of the entire octree.
+ * @param[in,out] tree: a pointer to the resulting octree. If it poitns to existing allocation, may be reused.
+ * @param[in,out] treeData: message buffer for tree serialization, may change in size during this process
+ * @param[in,out] treeSize: current allocation size of treeData, returns new treeData allocation
+ *
+ */
+void mapReduceBuildOctrees_NBMPI(
+	const double* __restrict__ r,
+	const double* __restrict__ m,
+	long localN,
+	double domainSize,
+	NBOctree_t** tree,
+	uint8_t** treeData,
+	size_t* treeSize)
+{
+	if (tree == NULL || treeData == NULL || treeSize == NULL) {
+		return;
+	}
+
+	//map
+    buildOctreeInPlace_NB(localN, r, m, domainSize, tree);
+
+    int world_rank, world_size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int ntrees = world_size;
+
+    //reduce
+
+	//get steps by bit-hacked ceil(log_2(ntrees))
+	int nsteps = 0;
+	int ntreetmp = ntrees;
+	while (ntreetmp >>= 1) { ++nsteps; }
+	if ((ntrees & (ntrees-1))) { ++nsteps; } //round up if not exactly a power of 2
+
+	NBOctree_t* tmpTree = NULL;
+	size_t newTreeSize;
+	MPI_Status stat;
+	int stepSize = 1;
+	for (int i = 0; i < nsteps; ++i) {
+		//rank k+stepsize sends to rank k to do the merge.
+		for (int k = 0; k < ntrees; k += 2*stepSize) {
+			if (world_rank == k && world_rank + stepSize < world_size) {
+				// fprintf(stderr, "RANK %d RECEIVING FROM %d\n", world_rank, k + stepSize);
+				MPI_Recv(&newTreeSize, 1, MPI_LONG,
+					     k + stepSize, 0, MPI_COMM_WORLD, &stat);
+				if (newTreeSize > *treeSize) {
+					*treeData = realloc(*treeData, sizeof(uint8_t)*newTreeSize);
+					*treeSize = newTreeSize;
+				}
+				MPI_Recv(*treeData, *treeSize, MPI_UINT8_T,
+						 k + stepSize, 0, MPI_COMM_WORLD, &stat);
+
+	            tmpTree = deserializeOctree_NB(*treeData, *treeSize);
+	            mergeOctreesInPlace_NB(*tree, tmpTree);
+				freeOctree_NB(tmpTree);
+
+			} else if (world_rank == k + stepSize) {
+				// fprintf(stderr, "RANK %d SENDING TO %d\n", world_rank, k);
+				newTreeSize = serializeOctree_NB(*tree, treeData, treeSize);
+				MPI_Send(&newTreeSize, 1, MPI_LONG,
+						 k, 0, MPI_COMM_WORLD);
+				MPI_Send(*treeData, newTreeSize, MPI_UINT8_T,
+						 k, 0, MPI_COMM_WORLD);
+			}
+		}
+		stepSize <<= 1;
+	}
+
+	if (world_rank == 0) {
+		computeMassVals_NB((*tree)->root);
+	}
+}
+#endif

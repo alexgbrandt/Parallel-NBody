@@ -33,7 +33,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
  * Init data
  **********************************/
     double *r = NULL, *v = NULL, *a = NULL, *m = NULL, *work = NULL;
-    int err = allocData(N, &r, &v, &a, &m, &work);
+    int err = allocData_NB(N, &r, &v, &a, &m, &work);
     if (err) {
         fprintf(stderr, "Could not alloc data for N=%ld\n", N);
         exit(ALLOC_ERROR);
@@ -41,7 +41,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
 
     // N = 3;
     // err = initData3BodyFigureEight(r, v, a, m);
-    err = initData(N, seed, r, v, a, m);
+    err = initData_NB(N, seed, r, v, a, m);
 
     //for first round just guess work = N;
     for (long i = 0; i < N; ++i) {
@@ -156,7 +156,7 @@ void NBodySimSerial(long N, double dt, double t_end, time_t seed, double theta) 
 /**********************************
  * Clean up
  **********************************/
-    freeData(r, v, a, m, work);
+    freeData_NB(r, v, a, m, work);
     free(tmp1_node);
     free(tmp2_node);
 }
@@ -170,7 +170,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
  * Init data
  **********************************/
     double *r = NULL, *v = NULL, *a = NULL, *m = NULL, *work = NULL;
-    int err = allocData(N, &r, &v, &a, &m, &work);
+    int err = allocData_NB(N, &r, &v, &a, &m, &work);
     if (err) {
         fprintf(stderr, "Could not alloc data for N=%ld\n", N);
         exit(ALLOC_ERROR);
@@ -178,7 +178,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
 
     // N = 3;
     // err = initData3BodyFigureEight(r, v, a, m);
-    err = initData(N, seed, r, v, a, m);
+    err = initData_NB(N, seed, r, v, a, m);
 
     //for first round just guess work = N;
     for (long i = 0; i < N; ++i) {
@@ -186,7 +186,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
     }
     long startN[NBODY_NPROCS];
     long numN[NBODY_NPROCS];
-    computeWorkPartitions(N, work, startN, numN, NBODY_NPROCS);
+    computeWorkPartitions_NB(N, work, startN, numN, NBODY_NPROCS);
 
     double Epot = computeEpot_NB(N, m, r);
     double Ekin = computeEkin_NB(N, m, v);
@@ -276,6 +276,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
         //not worth parallelizing key gen, only 0.002s for 100k keys.
         computeSpatialKeys_NB(N, r, keys);
         sortSpatialKeys_NB(N, keys, idx);
+        //TODO need to sort m array as well if bodies are not all same mass
         parallelSortByIdxMap_NB(
             N, r, v, work,
         #if NBODY_SIM_WITH_RENDERER
@@ -284,7 +285,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
             idx,
             tmpLong
         );
-        computeWorkPartitions(N, work, startN, numN, NBODY_NPROCS);
+        computeWorkPartitions_NB(N, work, startN, numN, NBODY_NPROCS);
 
         //build Octree
         domainSize = computeDomainSize_NB(N, r);
@@ -325,7 +326,7 @@ void NBodySimParallel(long N, double dt, double t_end, time_t seed, double theta
 /**********************************
  * Clean up
  **********************************/
-    freeData(r, v, a, m, work);
+    freeData_NB(r, v, a, m, work);
     freeSpatialKeys_NB(keys);
     free(idx);
     for (int i = 0; i < NBODY_NPROCS; ++i) {
