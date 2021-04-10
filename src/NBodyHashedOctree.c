@@ -947,10 +947,10 @@ void asyncRequestHOTChildren_NB(NBodyHOT_t hot, NBodyDeferData_t* deferData) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
 	int other_rank = deferData->parentNode->owningRank;
-	spatialKey_t reqKey = deferData->parentNode->key;
+	deferData->reqKey = deferData->parentNode->key;
 	deferData->parentNode->requested = 1;
 
-	MPI_Isend(&reqKey, 1, MPI_UNSIGNED_LONG_LONG, other_rank, KeyRequestTag, MPI_COMM_WORLD, deferData->reqs);
+	MPI_Isend(&(deferData->reqKey), 1, MPI_UNSIGNED_LONG_LONG, other_rank, KeyRequestTag, MPI_COMM_WORLD, deferData->reqs);
 	MPI_Irecv(deferData->recvBuffer, HOTChildrenSerSize, MPI_UINT8_T, other_rank, ChildDataTag, MPI_COMM_WORLD, deferData->reqs + 1);
 
 }
@@ -1165,10 +1165,10 @@ long traverseDistribAsyncHOTInteractionList_NB(NBodyHOT_t hot,
 				}
 
 				child = getHOTNode_NB(hot, getOctChildKey_NB(node->key, i));
-				// if (child == NULL) {
+				//if (child == NULL) {
 				// 	fprintf(stderr, "\n\n#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nRANK %d CHILD WAS NULL %d, %llo, %llo\n", world_rank, i, node->key,  getOctChildKey_NB(node->key, i));
-				// 	exit(1);
-				// }
+				//	exit(1);
+				//}
 				if ((*mac)(child, r, theta)) {
 					interactList[intIdx++] = child;
 				} else {

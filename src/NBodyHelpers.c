@@ -51,11 +51,11 @@ void distributeWork_NBMPI(long N, long* localN_p, long* currAlloc_p,
     for (int k = 0; k < world_size-1; ++k) {
         if (world_rank == k) {
             totalWork = 0.0;
-            long sendIdx = 0;
+            long sendIdx = -1;
             w = *work;
             for (long i = 0; i < localN; ++i) {
                 totalWork += w[i];
-                if (totalWork >= workTarg) {
+                if (totalWork >= workTarg && sendIdx == -1) {
                     //then data from 0..i, inclusive should be kept by this proc.
                     //don't break so we compute total work for workDiff
                     sendIdx = i + 1;
@@ -76,7 +76,7 @@ void distributeWork_NBMPI(long N, long* localN_p, long* currAlloc_p,
                 //pull data from right neighbour
                 int recvCount = 0;
                 MPI_Recv(&recvCount, 1, MPI_INT, world_rank + 1, 0, MPI_COMM_WORLD, &stat);
-                if (localN + recvCount > currAlloc) {
+		if (localN + recvCount > currAlloc) {
                     while (localN + recvCount > currAlloc) {
                         currAlloc += (N / world_size);
                     }
@@ -93,6 +93,7 @@ void distributeWork_NBMPI(long N, long* localN_p, long* currAlloc_p,
                 MPI_Recv((*r) + 3*localN, 3*recvCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD, &stat);
                 MPI_Recv((*v) + 3*localN, 3*recvCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD, &stat);
                 MPI_Recv((*m) + localN, recvCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD, &stat);
+                MPI_Recv((*work) + localN, recvCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD, &stat);
                 localN = localN + recvCount;
             } else if (workDiff > 0.0) {
                 //push data to right neighbour
@@ -101,35 +102,40 @@ void distributeWork_NBMPI(long N, long* localN_p, long* currAlloc_p,
                 MPI_Send((*r) + 3*sendIdx, 3*sendCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD);
                 MPI_Send((*v) + 3*sendIdx, 3*sendCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD);
                 MPI_Send((*m) + sendIdx, sendCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD);
-                localN = localN - sendIdx;
+                MPI_Send((*work) + sendIdx, sendCount, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD);
+                localN = localN - sendCount;
             }
-
         } else if (world_rank == k + 1) {
             double workDiff = 0.0;
             MPI_Recv(&workDiff, 1, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD, &stat);
-            if (workDiff < 0.0) {
+	    if (workDiff < 0.0) {
                 //push data to prev processor
                 workDiff *= -1.0;
                 totalWork = 0.0;
                 w = *work;
+                int sendCount = -1;
                 for (int i = 0; i < localN; ++i) {
                     totalWork += w[i];
                     if (totalWork >= workDiff) {
-                        int sendCount = i+1;
-
-                        MPI_Send(&sendCount, 1, MPI_INT, world_rank - 1, 0, MPI_COMM_WORLD);
-                        MPI_Send(*r, 3*sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
-                        MPI_Send(*v, 3*sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
-                        MPI_Send(*m, sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
-
-                        int newN = localN - sendCount;
-                        memmove(*r, (*r) + 3*sendCount, sizeof(double)*newN*3);
-                        memmove(*v, (*v) + 3*sendCount, sizeof(double)*newN*3);
-                        memmove(*m, (*m) + sendCount, sizeof(double)*newN);
-                        localN = newN;
+                        sendCount = i+1;
                         break;
                     }
                 }
+                if (sendCount < 0) {
+                    sendCount = localN;
+                }
+                MPI_Send(&sendCount, 1, MPI_INT, world_rank - 1, 0, MPI_COMM_WORLD);
+                MPI_Send(*r, 3*sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
+                MPI_Send(*v, 3*sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
+                MPI_Send(*m, sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
+                MPI_Send(*work, sendCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD);
+
+                int newN = localN - sendCount;
+                memmove(*r, (*r) + 3*sendCount, sizeof(double)*newN*3);
+                memmove(*v, (*v) + 3*sendCount, sizeof(double)*newN*3);
+                memmove(*m, (*m) + sendCount, sizeof(double)*newN);
+                memmove(*work, (*work) + sendCount, sizeof(double)*newN);
+                localN = newN;
             } else if (workDiff > 0.0) {
                 //pull excess data from prev processor
                 int recvCount = 0;
@@ -150,14 +156,16 @@ void distributeWork_NBMPI(long N, long* localN_p, long* currAlloc_p,
                 }
 
                 //shift current data right to make room for extra;
-                memmove((*r) + 3*recvCount, *r, sizeof(double)*recvCount*3);
-                memmove((*v) + 3*recvCount, *v, sizeof(double)*recvCount*3);
-                memmove((*m) + recvCount, *m, sizeof(double)*recvCount);
-
+                memmove((*r) + 3*recvCount, *r, sizeof(double)*localN*3);
+                memmove((*v) + 3*recvCount, *v, sizeof(double)*localN*3);
+                memmove((*m) + recvCount, *m, sizeof(double)*localN);
+                memmove((*work) + recvCount, *work, sizeof(double)*localN);
 
                 MPI_Recv(*r, 3*recvCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD, &stat);
                 MPI_Recv(*v, 3*recvCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD, &stat);
                 MPI_Recv(*m, recvCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD, &stat);
+                MPI_Recv(*work, recvCount, MPI_DOUBLE, world_rank - 1, 0, MPI_COMM_WORLD, &stat);
+                
                 localN = localN + recvCount;
             }
         }

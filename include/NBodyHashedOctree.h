@@ -108,6 +108,7 @@ typedef struct deferData {
 
 	NBodyHOTNode_t* parentNode; //node being deferred and requested
 	uint8_t* recvBuffer; //pointer posted async receive buffer
+	spatialKey_t reqKey;
 	MPI_Request reqs[2]; //MPI_request handles for the key request and incoming data
 
 } NBodyDeferData_t;
@@ -463,6 +464,17 @@ void requestAndInsertHOTChildren_NB(NBodyHOT_t hot, NBodyHOTNode_t* node, uint8_
  * @param treeAlloc: a pointer to the current allocation size of the byte array
  */
 void fulfillHOTChildrenRequests_NB(NBodyHOT_t hot, uint8_t** treeData, size_t* treeAlloc);
+
+
+/**
+ * In a distributed hashed octree, check for, and respond to, requests
+ * for child data of a (child of a) branch node.
+ *
+ * @param hot: the local hashed octree
+ * @param treeData: a pointer to a byte array for temporary serialization storage, 
+ *                  must have allocation at least HOTChildrenSerSize.
+ */
+void asyncFulfillHOTChildrenRequests_NB(NBodyHOT_t hot, uint8_t* treeData);
 
 
 /**

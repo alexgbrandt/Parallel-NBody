@@ -4,8 +4,8 @@ MPIC = mpicc
 MPIPPC = mpic++
 
 INCLUDES=-I./include -I./
-CCOMPILEARG = -Wall -O0 -g -funroll-loops $(INCLUDES) -std=gnu11
-CPPCOMPILEARG = -Wall -O0 -g $(INCLUDES) -std=c++11
+CCOMPILEARG = -Wall -O3 -funroll-loops $(INCLUDES) -std=gnu11
+CPPCOMPILEARG = -Wall -O3 $(INCLUDES) -std=c++11
 
 OGLLIBS = -lglfw -lGLEW -lGL -lGLU -lrt -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor
 LDARGS = -lpthread -lm

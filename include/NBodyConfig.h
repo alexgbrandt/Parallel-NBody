@@ -39,7 +39,7 @@ static const int NBODY_NPROCS = 1;
 
 static const int SORT_EXCHANGE_SIZE = 64;
 
-static const int DEFAULT_HASHED_OCTREE_H = 12;
+static const int DEFAULT_HASHED_OCTREE_H = 14;
 
 
 #endif
