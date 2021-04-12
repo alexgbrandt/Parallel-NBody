@@ -3,6 +3,7 @@
 
 #if NBODY_MPI
 #include <mpi.h>
+#include "NBodyInit.h"
 
 /**
  * Smartly distribute the bodies (i.e. load balance)
