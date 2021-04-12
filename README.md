@@ -44,7 +44,7 @@ The main N-Body code is organized as:
 * NBodyHashedOctree: A hashed octree definition, building, branch nodes, mass/potential computations.
 * NBodyParallel: Routines for parallel wrappers of tree building, interactions, integration.
 * NBodySimulation: The main simulation loop.
-
+* NBodyMPISimulation: The main simulation loops for various distributed algorithms. 
 
 ## OpenGL Rendering
 
